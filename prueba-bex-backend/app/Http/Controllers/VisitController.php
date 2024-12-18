@@ -18,8 +18,41 @@ class VisitController extends Controller
         parent::__construct();
         $this->middleware('auth:api');
     }
+    
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *     path="/api/visits",
+     *     summary="Obtener lista de visitas",
+     *     description="Obtener una lista de visitas paginada",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Número de página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Número de elementos por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de visitas paginada",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="records", type="array", @OA\Items(ref="#/components/schemas/Visit")),
+     *             @OA\Property(property="totalPages", type="integer", example=1),
+     *             @OA\Property(property="totalRecords", type="integer", example=10)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     )
+     * )
      */
     public function index(PaginatorRequest $request)
     {
@@ -32,7 +65,29 @@ class VisitController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *     path="/api/visits",
+     *     summary="Crear una nueva visita",
+     *     description="Crear una nueva visita",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Visit")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Visita creada correctamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Visit")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autorizado"
+     *     )
+     * )
      */
     public function store(VisitStoreRequest $request)
     {
@@ -48,7 +103,32 @@ class VisitController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *     path="/api/visits/{id}",
+     *     summary="Mostrar una visita específica",
+     *     description="Obtener los detalles de una visita específica por su ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID de la visita",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Detalles de la visita",
+     *         @OA\JsonContent(ref="#/components/schemas/Visit")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Visita no encontrada"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autorizado"
+     *     )
+     * )
      */
     public function show(Visit $visit)
     {
@@ -60,7 +140,40 @@ class VisitController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Put(
+     *     path="/api/visits/{id}",
+     *     summary="Actualizar una visita",
+     *     description="Actualizar los detalles de una visita específica",
+     *     security={{"bearerAuth":{}}}, 
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID de la visita",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Visit")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Visita actualizada correctamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Visit")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Visita no encontrada"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autorizado"
+     *     )
+     * )
      */
     public function update(VisitUpdateRequest $request, Visit $visit)
     {
@@ -73,7 +186,31 @@ class VisitController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *     path="/api/visits/{id}",
+     *     summary="Eliminar una visita",
+     *     description="Eliminar una visita específica por su ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID de la visita",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Visita eliminada correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Visita no encontrada"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autorizado"
+     *     )
+     * )
      */
     public function destroy(Visit $visit)
     {
