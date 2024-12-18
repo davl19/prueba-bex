@@ -1,0 +1,5 @@
+{
+    "username.required": "Required username",
+    "users.nomatch": "User not found and/or invalid password.",
+    "password.required": "Password required."
+}
