@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique()->nullable();
-            $table->double('latitude', 9, 6)->nullable();
-            $table->double('longitude', 9, 6)->nullable();
+            $table->string('name', 50);
+            $table->string('email', 50)->unique()->nullable();
+            $table->double('latitude', 9, 6);
+            $table->double('longitude', 9, 6);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -5,6 +5,8 @@ namespace App\Traits;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\UnauthorizedException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 
 trait ResponseTrait
 {
@@ -74,6 +76,111 @@ trait ResponseTrait
             'status' => 'ok',
             'message' => $message,
         ], $code ?? 200);
+    }
+
+    /**
+     * Formatea y devuelve una respuesta paginada basada en el tipo de colección proporcionada.
+     * Esta función adapta la respuesta a diferentes tipos de paginadores o colecciones para 
+     * proporcionar un formato de paginación consistente en las respuestas API.
+     *
+     * @param mixed $collection La colección de datos que se desea paginar. Puede ser:
+     *                          - `\Illuminate\Pagination\LengthAwarePaginator`: Un paginador con información completa.
+     *                          - `\Illuminate\Http\Resources\Json\AnonymousResourceCollection`: Una colección de recursos anónimos.
+     *                          - `\Illuminate\Pagination\Paginator`: Un paginador simple.
+     *                          - Una colección estándar como `\Illuminate\Support\Collection`.
+     *
+     * Comportamiento:
+     * 1. Si `$collection` es una instancia de `LengthAwarePaginator` o `AnonymousResourceCollection`:
+     *    - Devuelve los elementos paginados, el número total de páginas (`lastPage`) y el número total de registros (`total`).
+     * 2. Si `$collection` es una instancia de `Paginator` (paginador simple):
+     *    - Devuelve los elementos y establece `totalPages` en `1` y `totalRecords` con la cantidad de elementos actuales.
+     * 3. Para colecciones estándar (`Collection`):
+     *    - Devuelve todos los registros con `totalPages` en `1` y el conteo total de elementos.
+     *
+     * Ejemplo de respuesta:
+     * ```json
+     * {
+     *     "success": true,
+     *     "data": {
+     *         "records": [...],
+     *         "totalPages": 5,
+     *         "totalRecords": 100
+     *     }
+     * }
+     * ```
+     *
+     * @return \Illuminate\Http\JsonResponse Devuelve una respuesta en formato JSON con los datos paginados.
+     */
+    public function paginate($collection)
+    {
+        if (
+            $collection instanceof \Illuminate\Pagination\LengthAwarePaginator
+            || $collection instanceof \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+        ) {
+            $response = [
+                'records' => $collection->items(),
+                'totalPages' => $collection->lastPage(),
+                'totalRecords' => $collection->total(),
+            ];
+        } else if ($collection instanceof \Illuminate\Pagination\Paginator) {
+            $response = [
+                'records' => $collection->items(),
+                'totalPages' => 1,
+                'totalRecords' => count($collection->items()),
+            ];
+        } else {
+            $response = [
+                'records' => $collection,
+                'totalPages' => 1,
+                'totalRecords' => $collection->count(),
+            ];
+        }
+        return $this->success($response);
+    }
+
+        /**
+     * Maneja excepciones y devuelve respuestas de error personalizadas dependiendo del tipo de excepción.
+     * Esta función permite capturar diferentes tipos de excepciones y retornar mensajes de error adaptados 
+     * al contexto de la aplicación.
+     *
+     * @param \Throwable $th La excepción que se va a manejar.
+     * @param bool $mp Indica si la excepción es un error de una API específica que contiene una respuesta 
+     *                 personalizada. Por defecto es `false`.
+     *
+     * Comportamiento:
+     * 1. Si `$mp` es `true`, se devuelve un mensaje de error extraído del contenido de la respuesta API.
+     * 2. Si la excepción es una instancia de `TokenInvalidException`, lanza una nueva excepción con un 
+     *    mensaje traducido correspondiente a un token inválido.
+     * 3. Si la excepción es una instancia de `UnauthorizedException`, lanza una nueva excepción con el 
+     *    código de error 401 y un mensaje traducido para denegación de acceso.
+     * 4. Si no corresponde a los casos anteriores, se devuelve el mensaje genérico de la excepción.
+     *
+     * Ejemplo de uso:
+     * ```php
+     * try {
+     *     // Código que podría lanzar una excepción
+     * } catch (\Throwable $th) {
+     *     return $this->errorException($th, true);
+     * }
+     * ```
+     *
+     * @return mixed Devuelve una respuesta personalizada según el tipo de excepción.
+     *
+     * @throws \TokenInvalidException Si la excepción corresponde a un token inválido.
+     * @throws \UnauthorizedException Si la excepción corresponde a un error de autorización.
+     */
+    public function errorException($th, $mp = false)
+    {
+        if ($mp) {
+            return $this->error($th->getApiResponse()->getContent()['message']);
+        }
+        if ($th instanceof TokenInvalidException) {
+            throw new TokenInvalidException(__('invalidtoken'));
+        }
+        if ($th instanceof UnauthorizedException) {
+            throw new UnauthorizedException(401, __('_401'));
+        }
+        return $this->error($th->getMessage());
     }
 
 }

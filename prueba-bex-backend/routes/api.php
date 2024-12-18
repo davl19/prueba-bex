@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\VisitController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -11,7 +12,8 @@ Route::group([
 });
 
 Route::middleware('api')->group(function () {
-    
+    // VISITS
+    Route::apiResource('visits', VisitController::class);
 });
 
 //Route::get('/user', function (Request $request) {

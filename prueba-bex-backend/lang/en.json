@@ -1,5 +1,11 @@
 {
     "username.required": "Required username",
     "users.nomatch": "User not found and/or invalid password.",
-    "password.required": "Password required."
+    "password.required": "Password required.",
+    "required_field" : "Required field",
+    "visits.name.max_name_size" : "The name must not exceed 50 characters.",
+    "visits.email.max_name_size" : "The email must not exceed 50 characters.",
+    "visits.latitude.numeric": "The latitude must be an numeric.",
+    "visits.longitude.numeric": "The longitude must be an numeric."
+    
 }
